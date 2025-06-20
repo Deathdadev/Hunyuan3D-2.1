@@ -96,11 +96,20 @@ cd hy3dpaint/custom_rasterizer
 pip install -e .
 cd ../..
 cd hy3dpaint/DifferentiableRenderer
-bash compile_mesh_painter.sh
+pip install -e .
 cd ../..
 
 wget https://github.com/xinntao/Real-ESRGAN/releases/download/v0.1.0/RealESRGAN_x4plus.pth -P hy3dpaint/ckpt
 ```
+
+### Install with prebuilt wheels
+#### 40 series and lower
+```bash
+pip install https://github.com/Deathdadev/Hunyuan3D-2.1/releases/download/windows-whl/custom_rasterizer-0.1-cp310-cp310-win_amd64.whl
+pip install https://github.com/Deathdadev/Hunyuan3D-2.1/releases/download/windows-whl/mesh_inpaint_processor-0.0.0-cp310-cp310-win_amd64.whl
+```
+#### 50 series
+##### Replace the above commands with the url for the wheels on the 50 series release page
 
 ### Code Usage
 
