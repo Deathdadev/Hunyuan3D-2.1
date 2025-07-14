@@ -323,7 +323,9 @@ class ImageConditionalFixASLDiffuserLogger(Callback):
                     save_path = os.path.join(visual_dir, os.path.basename(image_path))
                 save_path = os.path.splitext(save_path)[0] + '.glb'
 
-                print(image_path)
+                if isinstance(image_path, str):
+                    print(image_path)
+                    
                 with torch.no_grad():
                     mesh = pl_module.sample(batch={"image": image_path}, **self.kwargs)[0][0]
                     if isinstance(mesh, tuple) and len(mesh)==2:

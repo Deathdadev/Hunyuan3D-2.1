@@ -29,7 +29,7 @@ class multiviewDiffusionNet:
         self.device = config.device
 
         cfg_path = config.multiview_cfg_path
-        custom_pipeline = config.custom_pipeline
+        custom_pipeline = os.path.join(os.path.dirname(__file__),"..","hunyuanpaintpbr")
         cfg = OmegaConf.load(cfg_path)
         self.cfg = cfg
         self.mode = self.cfg.model.params.stable_diffusion_config.custom_pipeline[2:]

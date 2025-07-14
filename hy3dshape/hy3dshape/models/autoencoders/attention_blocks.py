@@ -548,7 +548,7 @@ class PointCrossAttentionEncoder(nn.Module):
 
         if pc_sharpedge_size == 0:
             print(
-                f'PointCrossAttentionEncoder INFO: pc_sharpedge_size is not given, using pc_size as pc_sharpedge_size')
+                f'PointCrossAttentionEncoder INFO: pc_sharpedge_size is zero')
         else:
             print(
                 f'PointCrossAttentionEncoder INFO: pc_sharpedge_size is given, using pc_size={pc_size}, pc_sharpedge_size={pc_sharpedge_size}')

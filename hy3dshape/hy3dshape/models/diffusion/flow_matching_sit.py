@@ -256,17 +256,14 @@ class Diffuser(pl.LightningModule):
     def forward(self, batch):
         with torch.autocast(device_type="cuda", dtype=torch.bfloat16): #float32 for text
             contexts = self.cond_stage_model(image=batch.get('image'), text=batch.get('text'), mask=batch.get('mask'))
-            # t5_text = contexts['t5_text']['prompt_embeds']
-            # nan_count = torch.isnan(t5_text).sum()
-            # if nan_count > 0:
-            #     print("t5_text has %d NaN values"%(nan_count))
+
         with torch.autocast(device_type="cuda", dtype=torch.float16):
             with torch.no_grad():
                 latents = self.first_stage_model.encode(batch[self.first_stage_key], sample_posterior=True)
                 latents = self.z_scale_factor * latents
                 # print(latents.shape)
 
-                # check vae encode and decode is ok? answer is ok !
+                # check vae encode and decode is ok? answer is ok!
                 # import time
                 # from hy3dshape.pipelines import export_to_trimesh
                 # latents = 1. / self.z_scale_factor * latents
@@ -333,9 +330,6 @@ class Diffuser(pl.LightningModule):
                     image = batch.get("image", None)
                     mask = batch.get('mask', None)
                     
-                    # if not isinstance(image, torch.Tensor): print(image.shape)
-                    # if isinstance(mask, torch.Tensor): print(mask.shape)
-                    
                     outputs = self.pipeline(image=image, 
                                             mask=mask,
                                             generator=generator,
@@ -350,5 +344,6 @@ class Diffuser(pl.LightningModule):
                         f.write(traceback.format_exc())
                         f.write("\n")
                     outputs = [None]
+
         self.cond_stage_model.disable_drop = False
         return [outputs]

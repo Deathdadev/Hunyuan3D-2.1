@@ -22,6 +22,8 @@
 # fine-tuning enabling code and other elements of the foregoing made publicly available
 # by Tencent in accordance with TENCENT HUNYUAN COMMUNITY LICENSE AGREEMENT.
 
+import os
+import yaml
 import math
 
 import numpy as np
@@ -31,6 +33,7 @@ import torch.nn.functional as F
 from einops import rearrange
 
 from .moe_layers import MoEBlock
+from ...utils import logger, synchronize_timer, smart_load_model
 
 
 def modulate(x, shift, scale):
@@ -463,6 +466,74 @@ class FinalLayer(nn.Module):
 
 
 class HunYuanDiTPlain(nn.Module):
+
+    @classmethod
+    @synchronize_timer('HunYuanDiTPlain Model Loading')
+    def from_single_file(
+        cls,
+        ckpt_path,
+        config_path,
+        device='cuda',
+        dtype=torch.float16,
+        use_safetensors=None,
+        **kwargs,
+    ):
+        # load config
+        with open(config_path, 'r') as f:
+            config = yaml.safe_load(f)
+
+        # load ckpt
+        if use_safetensors:
+            ckpt_path = ckpt_path.replace('.ckpt', '.safetensors')
+        if not os.path.exists(ckpt_path):
+            raise FileNotFoundError(f"Model file {ckpt_path} not found")
+
+        logger.info(f"Loading model from {ckpt_path}")
+        if use_safetensors:
+            import safetensors.torch
+            ckpt = safetensors.torch.load_file(ckpt_path, device='cpu')
+        else:
+            ckpt = torch.load(ckpt_path, map_location='cpu', weights_only=True)
+
+        if 'model' in ckpt:
+            ckpt = ckpt['model']
+        if 'model' in config:
+            config = config['model']
+
+        model_kwargs = config['params']
+        model_kwargs.update(kwargs)
+
+        model = cls(**model_kwargs)
+        model.load_state_dict(ckpt)
+        model.to(device=device, dtype=dtype)
+        return model
+
+    @classmethod
+    def from_pretrained(
+        cls,
+        model_path,
+        device='cuda',
+        dtype=torch.float16,
+        use_safetensors=False,
+        variant='fp16',
+        subfolder='hunyuan3d-dit-v2-1',
+        **kwargs,
+    ):
+        config_path, ckpt_path = smart_load_model(
+            model_path,
+            subfolder=subfolder,
+            use_safetensors=use_safetensors,
+            variant=variant
+        )
+
+        return cls.from_single_file(
+            ckpt_path,
+            config_path,
+            device=device,
+            dtype=dtype,
+            use_safetensors=use_safetensors,
+            **kwargs
+        )
 
     def __init__(
         self,

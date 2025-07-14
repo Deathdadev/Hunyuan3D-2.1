@@ -32,6 +32,7 @@ from transformers import (
     Dinov2Model,
     Dinov2Config,
 )
+from transformers import AutoImageProcessor, AutoModel
 
 
 def get_1d_sincos_pos_embed_from_grid(embed_dim, pos):
@@ -66,9 +67,10 @@ class ImageEncoder(nn.Module):
         super().__init__()
 
         if config is None:
-            self.model = self.MODEL_CLASS.from_pretrained(version)
+            self.model = AutoModel.from_pretrained(version)
         else:
             self.model = self.MODEL_CLASS(self.MODEL_CONFIG_CLASS.from_dict(config))
+            
         self.model.eval()
         self.model.requires_grad_(False)
         self.use_cls_token = use_cls_token
@@ -240,11 +242,26 @@ class SingleImageEncoder(nn.Module):
     def __init__(
         self,
         main_image_encoder,
+        drop_ratio=0.0
     ):
         super().__init__()
         self.main_image_encoder = build_image_encoder(main_image_encoder)
+        self.drop_ratio = drop_ratio
+        self.disable_drop = True
 
     def forward(self, image, mask=None, **kwargs):
+        outputs = {
+            'main': self.main_image_encoder(image, mask=mask, **kwargs),
+        }
+        if self.disable_drop:
+            return outputs
+        else:
+            random_p = torch.rand(len(image), device='cuda')
+            remain_bool_tensor = random_p > self.drop_ratio
+            outputs['main'] *= remain_bool_tensor.view(-1,1,1)
+        return outputs
+
+        
         outputs = {
             'main': self.main_image_encoder(image, mask=mask, **kwargs),
         }

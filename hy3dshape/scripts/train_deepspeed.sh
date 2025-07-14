@@ -35,12 +35,11 @@ export NCCL_DEBUG=WARN
 
 node_num=$1
 node_rank=$2
-master_ip=$3
-config=$4
-output_dir=$5
+num_gpu_per_node=$3
+master_ip=$4
+config=$5
+output_dir=$6
 
-# config='configs/dit-from-scratch-overfitting-flowmatching-dinog518-bf16-lr1e4-1024.yaml'
-# output_dir='output_folder/dit/overfitting_10'
 
 echo node_num $node_num
 echo node_rank $node_rank
@@ -64,7 +63,8 @@ NCCL_IB_GID_INDEX=3 \
 NCCL_NVLS_ENABLE=0 \
 python3 main.py \
     --num_nodes $node_num \
-    --num_gpus 8 \
+    --num_gpus $num_gpu_per_node \
     --config $config \
     --output_dir $output_dir \
     --deepspeed
+
