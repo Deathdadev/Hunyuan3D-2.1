@@ -1,4 +1,6 @@
-
+# [Archived]
+- Kept for reference of changes
+- Kept for compiled wheels
 <p align="center">
   <img src="assets/images/teaser.jpg">
 </p>
